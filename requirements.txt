@@ -1,0 +1,10 @@
+airsim==1.8.1
+black==23.7.0
+msgpack-python==0.5.6
+msgpack-rpc-python==0.4.1
+torch==2.1.0
+torchaudio==2.0.2
+torchvision==0.15.2
+tornado==4.5.3
+tqdm==4.66.1
+typing_extensions==4.8.0
