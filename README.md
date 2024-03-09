@@ -13,4 +13,6 @@ to use the drone object:
 from sim.conn import client
 client.move...
 ```
+## General info 
 
+airsim uses NED coords:  +X North, +Y EAST, +Z DOWN
