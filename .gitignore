@@ -1,0 +1,5 @@
+data/
+model/
+__pycache__/
+.git 
+.mypy_cache

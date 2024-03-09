@@ -2,35 +2,43 @@ import airsim
 import gymnasium 
 import numpy as np
 from gymnasium import spaces
-from sim.utils import get_img
+from sim.utils import get_img, map_actions
+import math 
 
 class DroneEnv(gymnasium.Env):
     
-    yaw_min, yaw_max = -np.pi, np.pi  # Range for yaw angle in radians
-    pitch_min, pitch_max = -np.pi, np.pi  # Range for pitch angle in radians    
-    roll_min, roll_max = -np.pi, np.pi  # Range for roll angle in radians
-    throttle_min, throttle_max = 0.0, 1.0  # Range for throttle
-
-
-    def __init__(self, img_shape: tuple[int], client: airsim.MultirotorClient = None):
+    def __init__(self, img_shape: tuple, client: airsim.MultirotorClient, target: np.ndarray):
         super().__init__()
     
+        self.target = target
+        self.state = {
+            "position": np.zeros(3),
+            "collision": False,
+            "prev_position": np.zeros(3),
+            "dist_to_target": np.inf
+        }
 
-        yaw_min, yaw_max = -np.pi, np.pi  # Range for yaw angle in radians
-        pitch_min, pitch_max = -np.pi, np.pi  # Range for pitch angle in radians    
-        roll_min, roll_max = -np.pi, np.pi  # Range for roll angle in radians
-        throttle_min, throttle_max = 0.0, 1.0  # Range for throttle
-    
-        self.action_space = spaces.Box(low = np.array([roll_min, pitch_min, yaw_min, throttle_min]),
-                                       high = np.array([roll_max, pitch_max, yaw_max, throttle_max]),
+        self.action_space = spaces.Box(low = np.array([-1., -1., -1., -1.]),
+                                       high = np.array([1., 1., 1., 1.]),
                                        dtype = np.float32)
 
         self.observation_space = spaces.Box(low = 0, high = 255, shape = img_shape, dtype = np.uint8)
 
         self.drone = client
         self._setup_flight()
-
-
+    
+    def _get_obs(self):
+        image = get_img()
+        self.drone_state = self.drone.getMultirotorState()
+        self.state["prev_position"] = self.state["position"]
+        pos = self.drone_state.kinematics_estimated.position
+        self.state["position"] = pos 
+        self.state["velocity"] = self.drone_state.kinematics_estimated.linear_velocity
+        collision = self.drone.simGetCollisionInfo().has_collided
+        self.state["collision"] = collision
+        self.state["dist_to_target"] = np.linalg.norm(pos.to_numpy_array() - self.target)
+        return image
+    
 
     def _setup_flight(self):
 
@@ -38,25 +46,27 @@ class DroneEnv(gymnasium.Env):
         self.drone.enableApiControl(True)
         self.drone.armDisarm(True)
         self.drone.takeoffAsync().join()
-        self.drone.moveToPositionAsync(0, -5, 0, 10).join()
-
-        
 
     def step(self, action):
-        #TODO! Box action space -> move drone in sim
-        self.drone.moveByRollPitchYawrateThrottleAsync(float(action[0]), float(action[1]), float(action[2]), float(action[3]), duration = 1).join()
+        ac = map_actions(action)
+        self.drone.moveByRollPitchYawrateThrottleAsync(**ac,duration=0.1).join()
         #TODO! Write a good reward function
-        self.drone.simPause(True)
-        reward = -1.0 if self.drone.simGetCollisionInfo().has_collided else 1.0
-        self.drone.simPause(False)
-        
-        return get_img(), reward, True if reward == -1.0 else False, True, {} 
+        reward, done = self.reward()
+        print(f"actions: {ac}, reward: {reward:.2f}, ep_done: {done}, dist_to_target: {self.state['dist_to_target']:.2f}")
+        return self._get_obs(), reward, done, False, {}
 
 
     def reset(self, seed = None, options = None):
         self._setup_flight()
-        return get_img(), {}
+        return self._get_obs(), {}
 
 
-
-
+    def reward(self):
+        if self.drone.simGetCollisionInfo().has_collided:
+            reward = -100
+        else:
+            reward = -self.state["dist_to_target"]
+        done = False
+        if reward <= -100: 
+            done = True
+        return reward, done
