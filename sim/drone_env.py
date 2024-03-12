@@ -60,7 +60,6 @@ class DroneEnv(gymnasium.Env):
         self._setup_flight()
         return self._get_obs(), {}
 
-
     def reward(self):
         if self.drone.simGetCollisionInfo().has_collided:
             reward = -100
