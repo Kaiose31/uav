@@ -49,7 +49,7 @@ class DroneEnv(gymnasium.Env):
 
     def step(self, action):
         ac = map_actions(action)
-        self.drone.moveByRollPitchYawrateThrottleAsync(**ac,duration=0.1).join()
+        self.drone.moveByRollPitchYawrateThrottleAsync(**ac,duration=5).join()
         #TODO! Write a good reward function
         reward, done = self.reward()
         print(f"actions: {ac}, reward: {reward:.2f}, ep_done: {done}, dist_to_target: {self.state['dist_to_target']:.2f}")
