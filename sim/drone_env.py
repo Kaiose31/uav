@@ -61,10 +61,15 @@ class DroneEnv(gymnasium.Env):
         return self._get_obs(), {}
 
     def reward(self):
+        distance = self.state["dist_to_target"]
+
         if self.drone.simGetCollisionInfo().has_collided:
             reward = -100
+        elif distance <= 10:
+            reward = 10/self.state["dist_to_target"]
         else:
-            reward = -self.state["dist_to_target"]
+
+            reward = -10/self.state["dist_to_target"]
         done = False
         if reward <= -100: 
             done = True
