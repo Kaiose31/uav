@@ -3,3 +3,4 @@ model/
 __pycache__/
 .git 
 .mypy_cache
+run_inst.sh

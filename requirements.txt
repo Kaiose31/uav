@@ -8,3 +8,4 @@ torchvision==0.15.2
 tornado==4.5.3
 tqdm==4.66.1
 typing_extensions==4.8.0
+stable-baselines3==2.2.1                                                                                                                                                                                                                                            

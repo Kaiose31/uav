@@ -49,7 +49,7 @@ class DroneEnv(gymnasium.Env):
 
     def step(self, action):
         ac = map_actions(action)
-        self.drone.moveByRollPitchYawrateThrottleAsync(**ac,duration=0.1).join()
+        self.drone.moveByRollPitchYawrateThrottleAsync(**ac,duration=5).join()
         #TODO! Write a good reward function
         reward, done = self.reward()
         print(f"actions: {ac}, reward: {reward:.2f}, ep_done: {done}, dist_to_target: {self.state['dist_to_target']:.2f}")
@@ -60,12 +60,16 @@ class DroneEnv(gymnasium.Env):
         self._setup_flight()
         return self._get_obs(), {}
 
-
     def reward(self):
+        distance = self.state["dist_to_target"]
+
         if self.drone.simGetCollisionInfo().has_collided:
             reward = -100
+        elif distance <= 10:
+            reward = 10/self.state["dist_to_target"]
         else:
-            reward = -self.state["dist_to_target"]
+
+            reward = -10/self.state["dist_to_target"]
         done = False
         if reward <= -100: 
             done = True
