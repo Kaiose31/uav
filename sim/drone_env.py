@@ -3,13 +3,13 @@ import gymnasium
 import numpy as np
 from gymnasium import spaces
 from sim.utils import get_img, map_actions
-import math 
 
 class DroneEnv(gymnasium.Env):
     
-    def __init__(self, img_shape: tuple, client: airsim.MultirotorClient, target: np.ndarray):
+    def __init__(self, img_shape: tuple, client: airsim.MultirotorClient, target: np.ndarray, step_size=0.1):
         super().__init__()
-    
+        
+        self.step_size = step_size
         self.target = target
         self.state = {
             "position": np.zeros(3),
@@ -41,15 +41,14 @@ class DroneEnv(gymnasium.Env):
     
 
     def _setup_flight(self):
-
         self.drone.reset()
         self.drone.enableApiControl(True)
         self.drone.armDisarm(True)
-        self.drone.takeoffAsync().join()
-
+        self.drone.moveToPositionAsync(0, 0, -10, 10).join()
+        
     def step(self, action):
         ac = map_actions(action)
-        self.drone.moveByRollPitchYawrateThrottleAsync(**ac,duration=5).join()
+        self.drone.moveByRollPitchYawrateThrottleAsync(**ac,duration=self.step_size).join()
         #TODO! Write a good reward function
         reward, done = self.reward()
         print(f"actions: {ac}, reward: {reward:.2f}, ep_done: {done}, dist_to_target: {self.state['dist_to_target']:.2f}")
@@ -66,10 +65,10 @@ class DroneEnv(gymnasium.Env):
         if self.drone.simGetCollisionInfo().has_collided:
             reward = -100
         elif distance <= 10:
-            reward = 10/self.state["dist_to_target"]
+            reward = self.state["dist_to_target"]
         else:
 
-            reward = -10/self.state["dist_to_target"]
+            reward = -self.state["dist_to_target"]
         done = False
         if reward <= -100: 
             done = True

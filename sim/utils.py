@@ -30,5 +30,3 @@ def map_actions(actions: np.ndarray) -> Dict:
             "yaw_rate" : np.interp(yaw, action_range, [0, 2* np.pi]).round(2),
             "throttle": np.interp(throttle, action_range, [0,1]).round(2),
         } 
-
-
