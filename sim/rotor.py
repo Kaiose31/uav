@@ -83,18 +83,3 @@ class Rotor(MultirotorClient):
         accel = f_total / self.mass
         vel = curr_vel + accel * self.timestep
         self.moveByVelocityAsync(vel[0], vel[1], vel[2], duration=0.1).join()
-
-
-if __name__ == "__main__":
-    import os
-    # Example
-    r = Rotor(os.environ["AIRSIMHOST"], 41451, target_position=np.array([20, 0, -10]))
-    r.reset()
-    r.confirmConnection()
-    r.armDisarm(True)
-    r.enableApiControl(True)
-    r.moveToPositionAsync(0, 0, -3, 3).join()
-    r.moveToPositionAsync(10, -7, -3, 10).join()
-    while 1:
-        r.apply_force()
-        print(f"distance to target: {np.linalg.norm(r.getMultirotorState().kinematics_estimated.position.to_numpy_array() -  r.target_position)}")
