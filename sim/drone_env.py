@@ -89,29 +89,38 @@ class DroneEnv(gymnasium.Env):
         return term_barrier + term_goal
 
     def reward(self):
-        d_goal = self.state["dist_to_target"]
-        d_max = self.drone.d_max
-        d_cz = self.drone.d_cz
+        d_goal = np.linalg.norm(self.state["prev_position"].to_numpy_array() - self.drone.target_position) #Previous position to target position
+        d_goal_t_plus_one = self.state["dist_to_target"] #Current position to target position
+        d_max = self.drone.d_max #Hyperparameter
+        d_cz = self.drone.d_cz #Hyperparameter
         # d_mz = self.drone.d_mz
-        cz_points = self.drone.get_cz_points()
+        cz_points = self.drone.get_cz_points() #List of points that are in range of CZ
 
         min_distance = -1
-        for _,point in enumerate(cz_points):
-            distance = np.linalg.norm(self.state.position.to_numpy_array() - point)
+        for _,point in enumerate(cz_points): #Loop through all barrier points
+            distance = np.linalg.norm(self.state.position.to_numpy_array() - point) #Calculate distance between current position and barrier point
             if distance < min_distance:
                 min_distance = distance
-        d_barrier = min_distance
+        d_barrier_t_plus_one = min_distance #Track the closest barrier point
+
+        min_distance_curr = -1
+        for _,point in enumerate(cz_points): #Loop through all barrier points
+            distance = np.linalg.norm(self.state["prev_position"].to_numpy_array() - point) #Calculate distance between previous position and barrier point
+            if distance < min_distance_curr:
+                min_distance_curr = distance
+        d_barrier = min_distance_curr #Track the closest barrier point
+        
 
         if self.drone.simGetCollisionInfo().has_collided:
             done = True
             reward = -1000
         elif (self.drone.points_mz() == 0 and self.drone.points_cz() == 0):
-            reward = self.R_a(d_max,d_goal,1)
+            reward = self.R_a(d_max,d_goal,d_goal_t_plus_one)
             done = False
         elif (self.drone.points_cz() > 0 and self.drone.points_mz() == 0):
-            reward = self.R_cz(d_cz,d_barrier,1,d_max,d_goal,1)
+            reward = self.R_cz(d_cz,d_barrier,d_barrier_t_plus_one,d_max,d_goal,d_goal_t_plus_one)
             done = False
         elif (self.drone.points_mz() > 0):
-            reward = self.R_mz(d_cz,d_barrier,1)
+            reward = self.R_mz(d_cz,d_barrier,d_barrier_t_plus_one)
             done = False
         return reward, done
