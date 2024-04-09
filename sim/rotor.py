@@ -77,9 +77,21 @@ class Rotor(MultirotorClient):
         print(f"collision points\t {self.get_cz_points()}")
 
     def apply_force(self):
-        curr_pos = self.getMultirotorState().kinematics_estimated.position.to_numpy_array()
-        curr_vel = self.getMultirotorState().kinematics_estimated.linear_velocity.to_numpy_array()
+        state = self.getMultirotorState().kinematics_estimated
+        curr_pos, curr_vel = state.position.to_numpy_array(), state.linear_velocity.to_numpy_array()
         f_total = sum(apf_repel(curr_pos, point, self.target_position) for point in self.get_cz_points()) + apf_gravity(curr_pos, self.target_position)
         accel = f_total / self.mass
         vel = curr_vel + accel * self.timestep
-        self.moveByVelocityAsync(vel[0], vel[1], vel[2], duration=0.1).join()
+        self.moveByVelocityAsync(vel[0], vel[1], vel[2], duration=self.timestep).join()
+
+
+# Example for tuning
+if __name__ == "__main__":
+    r = Rotor("192.168.1.102", 41451, target_position=np.array([-30, -10, -5]))
+    r.reset()
+    r.confirmConnection()
+    r.enableApiControl(True)
+    r.moveToPositionAsync(0, 0, -4, 1).join()
+    while 1:
+        r.apply_force()
+        print(np.linalg.norm(r.getMultirotorState().kinematics_estimated.position.to_numpy_array() - r.target_position))
