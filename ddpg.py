@@ -2,8 +2,6 @@ import torch
 from sim.drone_env import DroneEnv
 from stable_baselines3 import DDPG
 from stable_baselines3.common.callbacks import CheckpointCallback
-from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.env_checker import check_env
 from sim.conn import client
 import numpy as np
 
