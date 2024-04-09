@@ -1,0 +1,52 @@
+{
+  "SeeDocsAt": "https://github.com/Microsoft/AirSim/blob/main/docs/settings.md",
+  "SettingsVersion": 1.2,
+  "SimMode": "Multirotor",
+
+  "Vehicles": {
+   	"SimpleFlight": {
+   	   "VehicleType": "SimpleFlight",
+   	  "AllowAPIAlways": true,
+      "EnableTrace": true,
+       "Sensors": {
+        "LidarSensor1": {
+            "SensorType": 6,
+            "Enabled" : true,
+            "Range": 10,
+            "DrawSensor": true,
+            "NumberOfChannels": 16,
+            "RotationsPerSecond": 20,
+            "PointsPerSecond": 1000,
+            "X": 0, "Y": 0, "Z": -1,
+            "Roll": 0, "Pitch": 0, "Yaw" : 0,
+            "VerticalFOVUpper": 0,
+            "VerticalFOVLower": 360,
+            "HorizontalFOVStart": 0,
+            "HorizontalFOVEnd": 360,
+            "DrawDebugPoints": false,
+            "DataFrame": "VehicleInertialFrame"
+        }
+      }
+   	 }
+	},
+
+ 
+  
+  
+  "LocalHostIp": "0.0.0.0",
+  "ApiServerPort": 41451,
+  "RecordUIVisible": true,
+  "LogMessagesVisible": true,
+  "RpcEnabled": true,
+  "CameraDefaults": {
+    "CaptureSettings": [
+      {
+        "ImageType": 0,
+        "Width": 640,
+        "Height": 480,
+        "FOV_Degrees": 110,
+        "MotionBlurAmount": 0
+      }
+    ]
+  }
+}
