@@ -18,4 +18,5 @@ checkpoint_callback = CheckpointCallback(
     save_vecnormalize=False,
 )
 
+
 model = DDPG("CnnPolicy", env, tensorboard_log="data/DDPG_tensorboard", device=DEVICE, verbose=1).learn(total_timesteps=2000, callback=checkpoint_callback)
