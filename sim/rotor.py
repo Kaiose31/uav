@@ -28,8 +28,9 @@ def apf_gravity(current_pos: np.ndarray, goal_pos: np.ndarray):
 
 def apf_repel(current_pos: np.ndarray, obs_pos: np.ndarray, goal_pos: np.ndarray):
     assert current_pos.shape == obs_pos.shape == (3,)
+    delta = current_pos - obs_pos
     d_barrier = np.linalg.norm(current_pos - obs_pos)
-    return k_rep * ((1 / d_barrier) - (1 / p0)) * (1 / (d_barrier) ** 2) * np.gradient(d_barrier / current_pos)
+    return k_rep * ((1 / d_barrier) - (1 / p0)) * (1 / (d_barrier) ** 2) * np.array([delta[0] / d_barrier, delta[1] / d_barrier, delta[2] / d_barrier])
 
 
 class Rotor(MultirotorClient):
