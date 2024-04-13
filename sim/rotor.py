@@ -6,7 +6,7 @@ import numpy as np
 
 
 # Globals
-D_MAX = 10
+D_MAX = 15
 D_CZ = 5
 D_MZ = 1
 
@@ -87,7 +87,7 @@ class Rotor(MultirotorClient):
 
 # Example for tuning
 if __name__ == "__main__":
-    r = Rotor("192.168.1.102", 41451, target_position=np.array([-30, -10, -5]))
+    r = Rotor("104.154.176.103", 41451, target_position=np.array([-30, -10, -5]))
     r.reset()
     r.confirmConnection()
     r.enableApiControl(True)
