@@ -8,7 +8,7 @@ import os
 
 class DroneEnv(gymnasium.Env):
 
-    def __init__(self, img_shape: tuple, client: Rotor, target: np.ndarray, step_size=0.01, start_position=[0, 0, -5], goal_threshold=2.0):
+    def __init__(self, img_shape: tuple, client: Rotor, target: np.ndarray, step_size=0.1, start_position=[0, 0, -5], goal_threshold=2.0):
         super().__init__()
         self.start_position = start_position
         self.step_size = step_size
@@ -18,7 +18,6 @@ class DroneEnv(gymnasium.Env):
         self.observation_space = spaces.Box(low=0, high=255, shape=img_shape, dtype=np.uint8)
         self.drone = client
         self.drone.target_position = target
-        self._setup_flight()
 
     def _get_obs(self):
         image = get_img()

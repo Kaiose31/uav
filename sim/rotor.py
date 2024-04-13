@@ -1,9 +1,7 @@
 """Quadrotor with Collision Detection and Avoidance based on APF"""
 
 from airsim import MultirotorClient
-from enum import Enum
 import numpy as np
-
 
 # Globals
 D_MAX = 10
@@ -13,7 +11,7 @@ D_MZ = 1
 # potential field coefficient constants.
 # k_att = strength of attraction, k_rep = strength of repulsion
 k_att = 0.5
-k_rep = 0.6
+k_rep = 0.8
 
 # Max range of influence
 p0 = 5
@@ -42,7 +40,7 @@ class Rotor(MultirotorClient):
         self.d_max = D_MAX
         self.d_cz = D_CZ
         self.d_mz = D_MZ
-        self.timestep = 0.1
+        self.timestep = 0.2
 
     def is_collision_risk(self) -> bool:
         return self.points_cz() > 0
@@ -88,7 +86,7 @@ class Rotor(MultirotorClient):
 
 # Example for tuning
 if __name__ == "__main__":
-    r = Rotor("192.168.1.102", 41451, target_position=np.array([-30, -10, -5]))
+    r = Rotor("192.168.1.102", 41451, target_position=np.array([30, 0, -1]))
     r.reset()
     r.confirmConnection()
     r.enableApiControl(True)
