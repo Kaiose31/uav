@@ -18,7 +18,6 @@ class DroneEnv(gymnasium.Env):
         self.observation_space = spaces.Box(low=0, high=255, shape=img_shape, dtype=np.uint8)
         self.drone = client
         self.drone.target_position = target
-        self._setup_flight()
 
     def _get_obs(self):
         image = get_img()
