@@ -11,7 +11,6 @@ IMG_SHAPE = (480, 640, 3)
 TARGET = [-30, -10, -20]
 ENV_ID = "DroneSim-v1"
 NUM_EPISODES = 100
-
 # Each model may use different hyper params
 hyper_params = {
     "learning_rate": 0.001,
@@ -39,14 +38,6 @@ def train(model, env: gym.Env, hyper_params: dict, max_ep_steps: int):
     model.learn(total_timesteps=max_ep_steps * NUM_EPISODES, progress_bar=True)
 
 
-def evaluate():
-    pass
-
-
-def predict():
-    pass
-
-
 if __name__ == "__main__":
 
     args = parser.parse_args()
@@ -57,5 +48,4 @@ if __name__ == "__main__":
     env = gym.make(ENV_ID, img_shape=IMG_SHAPE, client=client, target=np.array(TARGET))
     if os.environ.get("DEBUG"):
         print(gym.spec(ENV_ID))
-
     train(model, env, hyper_params, args.steps_per_ep)
