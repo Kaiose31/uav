@@ -7,7 +7,7 @@ import numpy as np
 
 DEVICE = "cuda" if torch.cuda.is_available() else "auto"
 IMG_SHAPE = (480, 640, 3)
-TARGET = [-30, -10, -20]
+TARGET = [-90, -90, -1]
 env = DroneEnv(IMG_SHAPE, client, target=np.array(TARGET))
 
 checkpoint_callback = CheckpointCallback(

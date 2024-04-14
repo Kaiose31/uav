@@ -1,19 +1,17 @@
 """Quadrotor with Collision Detection and Avoidance based on APF"""
 
 from airsim import MultirotorClient
-from enum import Enum
 import numpy as np
 
-
 # Globals
-D_MAX = 15
-D_CZ = 5
+D_MAX = 12
+D_CZ = 9
 D_MZ = 1
 
 # potential field coefficient constants.
 # k_att = strength of attraction, k_rep = strength of repulsion
 k_att = 0.5
-k_rep = 0.6
+k_rep = 0.8
 
 # Max range of influence
 p0 = 5
@@ -28,8 +26,9 @@ def apf_gravity(current_pos: np.ndarray, goal_pos: np.ndarray):
 
 def apf_repel(current_pos: np.ndarray, obs_pos: np.ndarray, goal_pos: np.ndarray):
     assert current_pos.shape == obs_pos.shape == (3,)
+    delta = current_pos - obs_pos
     d_barrier = np.linalg.norm(current_pos - obs_pos)
-    return k_rep * ((1 / d_barrier) - (1 / p0)) * (1 / (d_barrier) ** 2) * np.gradient(d_barrier / current_pos)
+    return k_rep * ((1 / d_barrier) - (1 / p0)) * (1 / (d_barrier) ** 2) * np.array([delta[0] / d_barrier, delta[1] / d_barrier, delta[2] / d_barrier])
 
 
 class Rotor(MultirotorClient):
@@ -41,7 +40,7 @@ class Rotor(MultirotorClient):
         self.d_max = D_MAX
         self.d_cz = D_CZ
         self.d_mz = D_MZ
-        self.timestep = 0.1
+        self.timestep = 0.4
 
     def is_collision_risk(self) -> bool:
         return self.points_cz() > 0
@@ -87,7 +86,7 @@ class Rotor(MultirotorClient):
 
 # Example for tuning
 if __name__ == "__main__":
-    r = Rotor("104.154.176.103", 41451, target_position=np.array([-30, -10, -5]))
+    r = Rotor("34.68.92.182", 41451, target_position=np.array([-30, -10, -5]))
     r.reset()
     r.confirmConnection()
     r.enableApiControl(True)
