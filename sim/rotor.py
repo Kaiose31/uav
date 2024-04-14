@@ -10,8 +10,8 @@ D_MZ = 1
 
 # potential field coefficient constants.
 # k_att = strength of attraction, k_rep = strength of repulsion
-k_att = 0.5
-k_rep = 0.8
+k_att = 0.2
+k_rep = 0.9
 
 # Max range of influence
 p0 = 5
@@ -40,7 +40,7 @@ class Rotor(MultirotorClient):
         self.d_max = D_MAX
         self.d_cz = D_CZ
         self.d_mz = D_MZ
-        self.timestep = 0.4
+        self.timestep = 0.35
 
     def is_collision_risk(self) -> bool:
         return self.points_cz() > 0

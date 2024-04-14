@@ -8,7 +8,7 @@ import numpy as np
 
 DEVICE = "cuda" if torch.cuda.is_available() else "auto"
 IMG_SHAPE = (80, 80, 1)
-TARGET = [20, 0, -5]
+TARGET = [120, 120, -5]
 ENV_ID = "DroneSim-v1"
 NUM_EPISODES = 50
 # Each model may use different hyper params
