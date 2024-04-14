@@ -40,6 +40,8 @@ class Rotor(MultirotorClient):
         self.d_max = D_MAX
         self.d_cz = D_CZ
         self.d_mz = D_MZ
+
+        #RL and collision avoidance time diff
         self.timestep = 0.35
 
     def is_collision_risk(self) -> bool:
