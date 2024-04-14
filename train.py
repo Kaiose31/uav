@@ -7,19 +7,19 @@ import os
 import numpy as np
 
 DEVICE = "cuda" if torch.cuda.is_available() else "auto"
-IMG_SHAPE = (480, 640, 3)
-TARGET = [-30, -10, -20]
+IMG_SHAPE = (80, 80, 1)
+TARGET = [20, 0, -5]
 ENV_ID = "DroneSim-v1"
-NUM_EPISODES = 100
+NUM_EPISODES = 50
 # Each model may use different hyper params
 hyper_params = {
-    "learning_rate": 0.001,
-    "buffer_size": 1000000,
+    "learning_rate": 0.0003,
+    "buffer_size": 200_000,
     "learning_starts": 100,
-    "batch_size": 100,
+    "batch_size": 256,
     "tau": 0.005,
     "gamma": 0.99,
-    "train_freq": (1, "episode"),
+    "train_freq": 1,
     "gradient_steps": -1,
     "action_noise": None,
     "policy_kwargs": None,
@@ -34,8 +34,9 @@ parser.add_argument("-steps_per_ep", type=int)
 
 
 def train(model, env: gym.Env, hyper_params: dict, max_ep_steps: int):
-    model = model("CnnPolicy", env, device=DEVICE, tensorboard_log=f"data/{model.__name__}", **hyper_params)
-    model.learn(total_timesteps=max_ep_steps * NUM_EPISODES, progress_bar=True)
+    m = model("CnnPolicy", env, device=DEVICE, tensorboard_log=f"data/{model.__name__}", **hyper_params)
+    m.learn(total_timesteps=max_ep_steps * NUM_EPISODES, progress_bar=True)
+    m.save(f"model/{model.__name__}")
 
 
 if __name__ == "__main__":

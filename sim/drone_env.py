@@ -13,19 +13,19 @@ class DroneEnv(gymnasium.Env):
         self.start_position = start_position
         self.step_size = step_size
         self.goal_threshold = goal_threshold
+        self.img_shape = img_shape
         self.state = {"position": np.zeros(3), "prev_position": np.zeros(3), "dist_to_target": np.inf}
         self.action_space = spaces.Box(low=np.array([-1.0, -1.0, -1.0, -1.0]), high=np.array([1.0, 1.0, 1.0, 1.0]), dtype=np.float32)
-        self.observation_space = spaces.Box(low=0, high=255, shape=img_shape, dtype=np.uint8)
+        self.observation_space = spaces.Box(low=0, high=255, shape=self.img_shape, dtype=np.uint8)
         self.drone = client
         self.drone.target_position = target
 
     def _get_obs(self):
-        image = get_img()
-        drone_state = self.drone.getMultirotorState()
+        image = get_img(self.img_shape)
         self.state["prev_position"] = self.state["position"]
-        pos = drone_state.kinematics_estimated.position
-        self.state["position"] = pos.to_numpy_array()
-        self.state["dist_to_target"] = np.linalg.norm(pos.to_numpy_array() - self.drone.target_position)
+        self.drone_state = self.drone.getMultirotorState().kinematics_estimated
+        self.state["position"] = self.drone_state.position.to_numpy_array()
+        self.state["dist_to_target"] = np.linalg.norm(self.drone_state.position.to_numpy_array() - self.drone.target_position)
         return image
 
     def _setup_flight(self):
@@ -37,14 +37,15 @@ class DroneEnv(gymnasium.Env):
     def step(self, action):
         ac = map_actions(action)
         # APF action
-        self.drone.apply_force()
+        self.drone.apply_force(self.drone_state)
         # model action
-        self.drone.moveByRollPitchYawrateThrottleAsync(**ac, duration=self.step_size).join()
+        action_fut = self.drone.moveByRollPitchYawrateThrottleAsync(**ac, duration=self.step_size)
         obs = self._get_obs()
         reward, done = self.reward()
         info = {"actions": ac, "reward": reward, "ep_done": done, "dist_to_target": self.state["dist_to_target"]}
         if os.environ.get("DEBUG"):
             print(info)
+        action_fut.join()
         return obs, reward, done, False, info
 
     def reset(self, seed=None, options=None):

@@ -75,8 +75,7 @@ class Rotor(MultirotorClient):
     def debug_collision(self):
         print(f"collision points\t {self.get_cz_points()}")
 
-    def apply_force(self):
-        state = self.getMultirotorState().kinematics_estimated
+    def apply_force(self, state):
         curr_pos, curr_vel = state.position.to_numpy_array(), state.linear_velocity.to_numpy_array()
         f_total = sum(apf_repel(curr_pos, point, self.target_position) for point in self.get_cz_points()) + apf_gravity(curr_pos, self.target_position)
         accel = f_total / self.mass
@@ -91,6 +90,7 @@ if __name__ == "__main__":
     r.confirmConnection()
     r.enableApiControl(True)
     r.moveToPositionAsync(0, 0, -4, 1).join()
+    state = r.getMultirotorState().kinematics_estimated
     while 1:
-        r.apply_force()
-        print(np.linalg.norm(r.getMultirotorState().kinematics_estimated.position.to_numpy_array() - r.target_position))
+        r.apply_force(state)
+        print(np.linalg.norm(state.position.to_numpy_array() - r.target_position))
