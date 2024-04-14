@@ -5,12 +5,13 @@ import argparse
 import importlib
 import os
 import numpy as np
+import time
 
 DEVICE = "cuda" if torch.cuda.is_available() else "auto"
 IMG_SHAPE = (80, 80, 1)
-TARGET = [20, 0, -5]
+TARGET = [30, -30, -5]
 ENV_ID = "DroneSim-v1"
-NUM_EPISODES = 50
+NUM_EPISODES = 600
 # Each model may use different hyper params
 hyper_params = {
     "learning_rate": 0.0003,
@@ -34,9 +35,9 @@ parser.add_argument("-steps_per_ep", type=int)
 
 
 def train(model, env: gym.Env, hyper_params: dict, max_ep_steps: int):
-    m = model("CnnPolicy", env, device=DEVICE, tensorboard_log=f"data/{model.__name__}", **hyper_params)
+    m = model("CnnPolicy", env, device=DEVICE, tensorboard_log=f"data/{model.__name__}")
     m.learn(total_timesteps=max_ep_steps * NUM_EPISODES, progress_bar=True)
-    m.save(f"model/{model.__name__}")
+    m.save(f"model/{model.__name__}{time.time()}.zip")
 
 
 if __name__ == "__main__":
