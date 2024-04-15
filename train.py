@@ -10,10 +10,10 @@ import time
 from sim.utils import show_img
 
 DEVICE = "cuda" if torch.cuda.is_available() else "auto"
-IMG_SHAPE = (80, 80, 1)
-TARGET = [30, -30, -5]
+IMG_SHAPE = (120, 120, 1)
+TARGET = [-30, -30, -5]
 ENV_ID = "DroneSim-v1"
-NUM_EPISODES = 600
+NUM_EPISODES = 100
 # Each model may use different hyper params
 hyper_params = {
     "learning_rate": 0.0003,
@@ -35,6 +35,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-model", choices=["dqn", "a2c", "ppo", "ddpg", "sac", "td3"])
 parser.add_argument("-steps_per_ep", type=int)
 parser.add_argument("-p", action="store_true")
+parser.add_argument("-action", choices=["box", "discrete"])
 
 
 def train(model, env: gym.Env, hyper_params: dict, max_ep_steps: int):
@@ -57,7 +58,7 @@ if __name__ == "__main__":
     # Register env
     gym.register(id=ENV_ID, entry_point="sim.drone_env:DroneEnv", order_enforce=True, max_episode_steps=args.steps_per_ep)
     # make env
-    env = gym.make(ENV_ID, img_shape=IMG_SHAPE, client=client, target=np.array(TARGET))
+    env = gym.make(ENV_ID, img_shape=IMG_SHAPE, client=client, target=np.array(TARGET), action_type=args.action)
     if os.environ.get("DEBUG"):
         print(gym.spec(ENV_ID))
     train(model, env, hyper_params, args.steps_per_ep) if not args.p else predict(model, env, args.steps_per_ep)

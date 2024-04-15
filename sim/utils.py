@@ -1,11 +1,13 @@
 """Utility functions for send/fetch data from Airsim"""
 
-from typing import Optional, Dict
+from typing import Optional, Dict, Tuple
 from sim.conn import client
 import airsim
 import numpy as np
 import cv2
 from PIL import Image
+from airsim.types import Quaternionr
+import math
 
 
 # Depth image with single channel (no compression)
@@ -26,13 +28,8 @@ def show_img(image_arr: np.ndarray) -> None:
     cv2.waitKey(0)
 
 
-# Map actions from action_space to Drone Representation in Airsim.
-def map_actions(actions: np.ndarray) -> Dict:
-    roll, pitch, yaw, throttle = actions
-    action_range = [-1, 1]
-    return {
-        "roll": np.interp(roll, action_range, [-np.pi / 2, np.pi / 2]).round(2),
-        "pitch": np.interp(pitch, action_range, [-np.pi / 2, np.pi / 2]).round(2),
-        "yaw_rate": np.interp(yaw, action_range, [0, 2 * np.pi]).round(2),
-        "throttle": np.interp(throttle, action_range, [0, 1]).round(2),
-    }
+def to_euler_angles(q: Quaternionr) -> Tuple[float, float, float]:
+    roll = math.atan2(2 * (q.w_val * q.x_val + q.y_val * q.z_val), 1 - 2 * (q.x_val * q.x_val + q.y_val * q.y_val))
+    pitch = math.atan2(math.sqrt(1 + 2 * (q.w_val * q.y_val - q.x_val * q.z_val)), math.sqrt(1 - 2 * (q.w_val * q.y_val - q.x_val * q.z_val)))
+    yaw = math.atan2(2 * (q.w_val * q.z_val + q.x_val * q.y_val), 1 - 2 * (q.y_val * q.y_val + q.z_val * q.z_val))
+    return roll, pitch, yaw
