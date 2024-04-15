@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import time
 from sim.utils import show_img
+import wandb
 
 DEVICE = "cuda" if torch.cuda.is_available() else "auto"
 IMG_SHAPE = (120, 120, 1)
@@ -47,9 +48,32 @@ def train(model, env: gym.Env, hyper_params: dict, max_ep_steps: int):
 def predict(model, env: gym.Env, max_steps: int):
     m = model.load(sorted([os.path.join("model", Path(x).stem) for x in os.listdir("model") if x.startswith(model.__name__)])[-1])
     obs, _ = env.reset()
+
+    wandb.init(
+        project= "UAV",
+        config={
+        "learning_rate": hyper_params["learning_rate"],
+        "buffer_size": hyper_params["buffer_size"],
+        "learning_starts": hyper_params["learning_starts"],
+        "batch_size": hyper_params["batch_size"],
+        "tau": hyper_params["tau"],
+        "gamma": hyper_params["gamma"],
+        "train_freq": hyper_params["train_freq"],
+        "gradient_steps": hyper_params["gradient_steps"],
+        "action_noise": hyper_params["action_noise"],
+        "policy_kwargs": hyper_params["policy_kwargs"],
+        "verbose": hyper_params["verbose"],
+        "seed": hyper_params["seed"],
+        "_init_setup_model": hyper_params["_init_setup_model"],
+        }
+    )
+
     for step in range(max_steps):
         action, _states = m.predict(obs, deterministic=True)
         obs, rewards, dones, truncated, info = env.step(action)
+        wandb.log({"rewards": rewards, "info": info})
+    wandb.finish()
+
 
 
 if __name__ == "__main__":
