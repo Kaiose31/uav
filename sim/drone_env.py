@@ -1,4 +1,3 @@
-from .rotor import Rotor
 import gymnasium
 import numpy as np
 from gymnasium import spaces
@@ -9,7 +8,7 @@ import math
 
 class DroneEnv(gymnasium.Env):
 
-    def __init__(self, img_shape: tuple, client: Rotor, target: np.ndarray, step_size=1, start_position=[0, 0, -5], goal_threshold=2.0, action_type="box"):
+    def __init__(self, img_shape: tuple, client, target: np.ndarray, step_size=1, start_position=[0, 0, -5], goal_threshold=2.0, action_type="box"):
         super().__init__()
         self.start_position = start_position
         self.step_size = step_size
@@ -69,9 +68,6 @@ class DroneEnv(gymnasium.Env):
         self.drone.moveToPositionAsync(self.start_position[0], self.start_position[1], self.start_position[2], 1).join()
 
     def step(self, action):
-        # APF action
-        self.drone.apply_force(self.drone_state)
-        # model action
         action_fut, ac = self._take_action(action)
         obs = self._get_obs()
         reward, done = self.reward()

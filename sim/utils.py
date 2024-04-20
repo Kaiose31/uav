@@ -30,6 +30,6 @@ def show_img(image_arr: np.ndarray) -> None:
 
 def to_euler_angles(q: Quaternionr) -> Tuple[float, float, float]:
     roll = math.atan2(2 * (q.w_val * q.x_val + q.y_val * q.z_val), 1 - 2 * (q.x_val * q.x_val + q.y_val * q.y_val))
-    pitch = math.atan2(math.sqrt(1 + 2 * (q.w_val * q.y_val - q.x_val * q.z_val)), math.sqrt(1 - 2 * (q.w_val * q.y_val - q.x_val * q.z_val)))
+    pitch = math.atan2(2 * (q.w_val * q.x_val + q.y_val * q.z_val), 1 - 2 * (q.x_val * q.x_val + q.z_val * q.z_val))
     yaw = math.atan2(2 * (q.w_val * q.z_val + q.x_val * q.y_val), 1 - 2 * (q.y_val * q.y_val + q.z_val * q.z_val))
     return roll, pitch, yaw
