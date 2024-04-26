@@ -68,7 +68,7 @@ class DroneMod(gymnasium.Env):
         pitch = np.interp(action[1], action_range, [-np.pi / 2, np.pi / 2]).round(2)
         yaw = np.interp(action[2], action_range, [-np.pi / 4, np.pi / 4]).round(2)
         throttle = np.interp(action[3], action_range, [0, 1]).round(2)
-        self.drone.moveByRollPitchYawThrottleAsync(roll, pitch, yaw, throttle, duration=0.5).join()
+        self.drone.moveByRollPitchYawThrottleAsync(roll, pitch, yaw, throttle, duration=0.1).join()
 
     def step(self, action):
         self._take_action(action)
@@ -76,6 +76,7 @@ class DroneMod(gymnasium.Env):
         dist_to_target = self.drone_pos.distance_to(self.target)
         obs = self._get_obs()
         terminated, reward = self.reward(obs)
+        print(reward)
         return obs, reward, terminated, False, self._get_info()
 
     def reset(self, seed=None, options=None):
@@ -87,11 +88,11 @@ class DroneMod(gymnasium.Env):
         return self._get_obs(), self._get_info()
 
     def reward(self, obs):
+        if self.drone.simGetCollisionInfo().has_collided or self.drone_pos.z_val > -1:
+            return True, -10
         los = 0.666 * np.exp(-0.5 * (obs[14] / 0.5) ** 2)
-        close = 0 if self.prev_position is None else self.prev_position - self.drone_pos
+        close = 0 if self.prev_position is None else self.prev_position.distance_to(self.drone_pos)
         if obs[17] < 5 and obs[14] < 1 and abs(obs[7]) < 0.08:
             return True, 5 + los + close
-        elif self.drone.simGetCollisionInfo().has_collided:
-            return True, -10 + los + close
         else:
             return False, 0 + los + close

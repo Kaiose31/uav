@@ -10,7 +10,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "auto"
 IMG_SHAPE = (120, 120, 1)
 TARGET = [10, 0, -10]
 ENV_ID = "DroneSim-v1"
-NUM_EPISODES = 1000
+NUM_EPISODES = 10000
 # Each model may use different hyper params
 hyper_params = {
     "learning_rate": 0.0003,
@@ -34,7 +34,9 @@ parser.add_argument("-steps_per_ep", type=int)
 
 
 def train(model, env: gym.Env, hyper_params: dict, max_ep_steps: int):
+
     m = model("MlpPolicy", env, device=DEVICE, tensorboard_log=f"data/{model.__name__}")
+    m.load("model\SAC1713600152.1499069.zip")
     m.learn(total_timesteps=max_ep_steps * NUM_EPISODES, progress_bar=True)
     m.save(f"model/{model.__name__}{time.time()}.zip")
 
